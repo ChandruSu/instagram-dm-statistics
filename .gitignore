@@ -1,0 +1,6 @@
+
+# hides test message files
+*.json
+
+# python environment
+venv/
