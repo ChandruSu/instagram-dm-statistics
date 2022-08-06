@@ -6,6 +6,7 @@ import datetime
 import os.path as path
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 # ------------------------ CMD and File IO ------------------------
 
@@ -20,16 +21,18 @@ def get_args():
     ''' Extracts command line arguments and returns an
     array of atomic arguments and keyword arguments. '''
 
-    args_in = iter(sys.argv)
+    args_in = iter(sys.argv[1:])
 
     args = []
     kwargs = {}
 
     for arg in args_in:
-        if arg.startswith('-'):
+        if arg.startswith('--'):
+            args.append(arg[2:])
+        elif arg.startswith('-'):
             kwargs[arg[1:]] = next(args_in, None)
         else:
-            args.append(arg)
+            failure('Invalid argument, must be prefixed with - or --')
 
     return (args, kwargs)
 
@@ -102,18 +105,33 @@ def display_stats(stats):
         {user}
         ------
         Message Count: {ustats['count']}
-        Total Chars: {ustats['achars']}
-        Average Chars: {ustats['tchars']}
+        Total Chars: {ustats['tchars']}
+        Average Chars: {ustats['achars']}
         ''')
 
 # ------------------------ Graph Plotting -------------------------
 
 def plot_stats(data):
     df = data[['date', 'sender_name']]
-    df.groupby(['date', 'sender_name']).size().unstack('sender_name').plot(kind='bar', stacked=True)
+    fig = df.groupby(['date', 'sender_name']).size().unstack('sender_name').plot(kind='bar', stacked=True)
     plt.show()
 
 # -----------------------------------------------------------------
+
+HELP_TEXT = '''
+Instagram direct message analytics. Author: Chandru Suresh (2022)
+
+Instructions:
+    To run, have pandas and matplotlib installed globally or in local
+    virtual environment, then execute 'python igdmstats.py -path /path/to/dir'
+    where the specified path contains the message.json file.
+
+Arguments:
+    -path [path]    Path to directory containing message.json files
+
+    --plot          Plots stacked bar chart of messages over time
+    --help          Prints this help text and quits program
+'''
 
 # program starts here.
 if __name__ == '__main__':
@@ -121,12 +139,17 @@ if __name__ == '__main__':
 
     args, kwargs = get_args()
 
+    if 'help' in args:
+        print(HELP_TEXT)
+        quit()
+
     # sets specified directory path for message files.
     if 'path' in kwargs:
         msgdir = kwargs['path']
 
     data = read_messages(msgdir)
     display_stats(process_data(data))
-    plot_stats(data)
-    print(data)
+    
+    if 'plot' in args:
+        plot_stats(data)
 
