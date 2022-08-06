@@ -2,14 +2,19 @@ import os
 import re
 import sys
 import json
+import datetime
 import os.path as path
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # ------------------------ CMD and File IO ------------------------
 
 def failure(msg):
     print(f'\033[31m[Error] {msg}!\033[0m')
     quit()
+
+def mstodate(ms):
+    return datetime.datetime.fromtimestamp(ms/1000.0)
 
 def get_args():
     ''' Extracts command line arguments and returns an
@@ -54,7 +59,11 @@ def read_messages(dir_path):
         frames.append(frame)
 
     # returns unified data frame
-    return pd.concat(frames).reset_index(drop=True)
+    data = pd.concat(frames).reset_index(drop=True)
+    
+    data.rename(columns={ 'timestamp_ms':'date' }, inplace=True)
+    data['date'] = pd.to_datetime(data['date'], unit='ms').dt.date
+    return data
 
 # ------------------------- Data Analysis -------------------------
 
@@ -97,6 +106,13 @@ def display_stats(stats):
         Average Chars: {ustats['tchars']}
         ''')
 
+# ------------------------ Graph Plotting -------------------------
+
+def plot_stats(data):
+    df = data[['date', 'sender_name']]
+    df.groupby(['date', 'sender_name']).size().unstack('sender_name').plot(kind='bar', stacked=True)
+    plt.show()
+
 # -----------------------------------------------------------------
 
 # program starts here.
@@ -111,4 +127,6 @@ if __name__ == '__main__':
 
     data = read_messages(msgdir)
     display_stats(process_data(data))
+    plot_stats(data)
+    print(data)
 
