@@ -63,7 +63,7 @@ def read_messages(dir_path):
     data = pd.concat(frames).reset_index(drop=True)
     
     data.rename(columns={ 'timestamp_ms':'date' }, inplace=True)
-    data['date'] = pd.to_datetime(data['date'], unit='ms').dt.date
+    data['date'] = pd.to_datetime(data['date'], unit='ms')
     return data
 
 # ------------------------- Data Analysis -------------------------
@@ -111,12 +111,27 @@ def display_stats(stats):
         Average Chars: {ustats['achars']}
         ''')
 
+# ----------------------- Message Retrieval -----------------------
+
+def fetch_messages(data, date_):
+
+    print(f'Messages from {date_.date()}:\n--------')
+
+    data = data.sort_values('date')
+    data['date'] = pd.to_datetime(data['date']).dt.date
+    messages = data[data['date'] == date_.date()]
+    
+    for i, msg in messages.iterrows():
+        print('{:<15} {}'.format(msg['sender_name'], msg['content']))
+
 # ------------------------ Graph Plotting -------------------------
 
 def plot_stats(data):
     ''' Represents message data as matplotlib graphs. '''
 
     df = data[['date', 'sender_name']]
+    
+    df['date'] = df['date'].dt.date
     fig = df.groupby(['date', 'sender_name']).size().unstack('sender_name').plot(kind='bar', stacked=True)
     plt.show()
 
@@ -156,4 +171,7 @@ if __name__ == '__main__':
     
     if 'plot' in args:
         plot_stats(data)
+    
+    if 'list-messages' in kwargs:
+        fetch_messages(data, pd.to_datetime(kwargs['list-messages']))
 
