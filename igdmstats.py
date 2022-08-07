@@ -14,8 +14,6 @@ def failure(msg):
     print(f'\033[31m[Error] {msg}!\033[0m')
     quit()
 
-def mstodate(ms):
-    return datetime.datetime.fromtimestamp(ms/1000.0)
 
 def get_args():
     ''' Extracts command line arguments and returns an
@@ -71,6 +69,8 @@ def read_messages(dir_path):
 # ------------------------- Data Analysis -------------------------
 
 def process_message(stats, msg):
+    ''' Extracts statistical information for a given message and stores
+    it in stats dictionary. '''
 
     # creates stat container for user
     if msg['sender_name'] not in stats:
@@ -84,6 +84,8 @@ def process_message(stats, msg):
 
 
 def process_data(data):
+    ''' Iterates through every message and calculates per-message statistics. '''
+
     stats = {}
 
     for index, row in data.iterrows():
@@ -112,6 +114,8 @@ def display_stats(stats):
 # ------------------------ Graph Plotting -------------------------
 
 def plot_stats(data):
+    ''' Represents message data as matplotlib graphs. '''
+
     df = data[['date', 'sender_name']]
     fig = df.groupby(['date', 'sender_name']).size().unstack('sender_name').plot(kind='bar', stacked=True)
     plt.show()
