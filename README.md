@@ -27,5 +27,6 @@ Script provides a very simple command line interface
 |Parameter|Description|
 |---|---|
 |`-path`|Allows user to specify path to inbox directory containing message.json files. Requires additional argument (path). By default, script searches message files in the same directory.|
+|`-list-messages`|Prints all the messages exchanged on a specified date in the format `yyyy/mm/dd`.|
 |`--plot`|Plots matplotlib stacked bar chart displaying messages by user over time. |
 |`--help`|Prints help text and terminates program prematurely.|
